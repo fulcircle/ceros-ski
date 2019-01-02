@@ -2,243 +2,132 @@ import $ from "jquery";
 import _ from "lodash";
 import { Assets } from "./Assets";
 import { Skier } from "./Skier";
+import { Obstacles } from "./Obstacles";
 
-$(document).ready(async function() {
+export interface Dimensions {
+    width: number;
+    height: number;
+}
 
-    const obstacleTypes = [
-        "tree_1",
-        "treeCluster",
-        "rock_1",
-        "rock_2"
-    ];
+class Game {
 
-    let obstacles = [];
+    window: Window = window;
+    canvas = $("<canvas><canvas>");
+    body = $("body");
+    ctx: CanvasRenderingContext2D;
+    skier: Skier;
+    obstacles: Obstacles;
 
-    const gameWidth = window.innerWidth;
-    const gameHeight = window.innerHeight;
-    const canvas: any = $("<canvas></canvas>")
-        .attr("width", gameWidth * window.devicePixelRatio)
-        .attr("height", gameHeight * window.devicePixelRatio)
-        .css({
-            width: gameWidth + "px",
-            height: gameHeight + "px"
-        });
-    $("body").append(canvas);
-    const ctx = canvas[0].getContext("2d");
-
-    const skier = new Skier(ctx);
-
-    const clearCanvas = function() {
-        ctx.clearRect(0, 0, gameWidth, gameHeight);
+    dimensions: Dimensions = {
+        width: this.window.innerWidth,
+        height: this.window.innerHeight
     };
 
-    const moveSkier = function() {
-        skier.move();
-        if (skier.direction === 2 || skier.direction === 3 || skier.direction === 4) {
-            placeNewObstacle(skier.direction);
-        }
-    };
+    async initGame() {
+        this.canvas
+            .attr("width", this.dimensions.width * this.window.devicePixelRatio)
+            .attr("height", this.dimensions.height * this.window.devicePixelRatio)
+            .css({
+                width: this.dimensions.width + "px",
+                height: this.dimensions.height + "px"
+            });
+        this.body.append(this.canvas);
+        this.ctx = (<HTMLCanvasElement>this.canvas[0]).getContext("2d");
 
-    const drawObstacles = function() {
-        const newObstacles = [];
+        this.skier = new Skier(this.ctx, this.dimensions);
 
-        _.each(obstacles, function(obstacle) {
-            const obstacleImage = Assets.getImage(obstacle.type);
-            const x = obstacle.x - skier.location.x - obstacleImage.width / 2;
-            const y = obstacle.y - skier.location.y - obstacleImage.height / 2;
-
-            if (x < -100 || x > gameWidth + 50 || y < -100 || y > gameHeight + 50) {
-                return;
-            }
-
-            ctx.drawImage(obstacleImage, x, y, obstacleImage.width, obstacleImage.height);
-
-            newObstacles.push(obstacle);
-        });
-
-        obstacles = newObstacles;
-    };
-
-    const placeInitialObstacles = function() {
-        const numberObstacles = Math.ceil(_.random(5, 7) * (gameWidth / 800) * (gameHeight / 500));
-
-        const minX = -50;
-        const maxX = gameWidth + 50;
-        const minY = gameHeight / 2 + 100;
-        const maxY = gameHeight + 50;
-
-        for (let i = 0; i < numberObstacles; i++) {
-            placeRandomObstacle(minX, maxX, minY, maxY);
-        }
-
-        obstacles = _.sortBy(obstacles, function(obstacle) {
-            const obstacleImage = Assets.getImage(obstacle.type);
-            return obstacle.y + obstacleImage.height;
-        });
-    };
-
-    const placeNewObstacle = function(direction) {
-        const shouldPlaceObstacle = _.random(1, 8);
-        if (shouldPlaceObstacle !== 8) {
-            return;
-        }
-
-        const leftEdge = skier.location.x;
-        const rightEdge = skier.location.x + gameWidth;
-        const topEdge = skier.location.y;
-        const bottomEdge = skier.location.y + gameHeight;
-
-        switch (direction) {
-            case 1: // left
-                placeRandomObstacle(leftEdge - 50, leftEdge, topEdge, bottomEdge);
-                break;
-            case 2: // left down
-                placeRandomObstacle(leftEdge - 50, leftEdge, topEdge, bottomEdge);
-                placeRandomObstacle(leftEdge, rightEdge, bottomEdge, bottomEdge + 50);
-                break;
-            case 3: // down
-                placeRandomObstacle(leftEdge, rightEdge, bottomEdge, bottomEdge + 50);
-                break;
-            case 4: // right down
-                placeRandomObstacle(rightEdge, rightEdge + 50, topEdge, bottomEdge);
-                placeRandomObstacle(leftEdge, rightEdge, bottomEdge, bottomEdge + 50);
-                break;
-            case 5: // right
-                placeRandomObstacle(rightEdge, rightEdge + 50, topEdge, bottomEdge);
-                break;
-            case 6: // up
-                placeRandomObstacle(leftEdge, rightEdge, topEdge - 50, topEdge);
-                break;
-        }
-    };
-
-    const placeRandomObstacle = function(minX, maxX, minY, maxY) {
-        const obstacleIndex = _.random(0, obstacleTypes.length - 1);
-
-        const position = calculateOpenPosition(minX, maxX, minY, maxY);
-
-        obstacles.push({
-            type : obstacleTypes[obstacleIndex],
-            x : position.x,
-            y : position.y
-        });
-    };
-
-    const calculateOpenPosition = function(minX, maxX, minY, maxY) {
-        const x = _.random(minX, maxX);
-        const y = _.random(minY, maxY);
-
-        const foundCollision = _.find(obstacles, function(obstacle) {
-            return x > (obstacle.x - 50) && x < (obstacle.x + 50) && y > (obstacle.y - 50) && y < (obstacle.y + 50);
-        });
-
-        if (foundCollision) {
-            return calculateOpenPosition(minX, maxX, minY, maxY);
-        }
-        else {
-            return {
-                x: x,
-                y: y
-            };
-        }
-    };
-
-    const checkIfSkierHitObstacle = function() {
-        const skierImage = Assets.getSkierImage(skier.direction);
-        const skierRect = {
-            left: skier.location.x + gameWidth / 2,
-            right: skier.location.x + skierImage.width + gameWidth / 2,
-            top: skier.location.y + skierImage.height - 5 + gameHeight / 2,
-            bottom: skier.location.y + skierImage.height + gameHeight / 2
+        this.window.onkeydown = (event: KeyboardEvent) => {
+            this.handleKeyDown(event);
         };
+        await Assets.loadAssets();
 
-        const collision = _.find(obstacles, function(obstacle) {
-            const obstacleImage = Assets.getImage(obstacle.type);
-            const obstacleRect = {
-                left: obstacle.x,
-                right: obstacle.x + obstacleImage.width,
-                top: obstacle.y + obstacleImage.height - 5,
-                bottom: obstacle.y + obstacleImage.height
-            };
+        this.obstacles = new Obstacles(this.ctx, this.skier, this.dimensions);
+        this.obstacles.placeInitialObstacles();
 
-            return intersectRect(skierRect, obstacleRect);
+        requestAnimationFrame(() => {
+            this.gameLoop();
         });
 
-        if (collision) {
-            skier.direction = 0;
+    }
+
+    clearCanvas() {
+        this.ctx.clearRect(0, 0, this.dimensions.width, this.dimensions.height);
+    }
+
+
+    moveSkier() {
+        this.skier.move();
+        if (this.skier.direction === 2 || this.skier.direction === 3 || this.skier.direction === 4) {
+            this.obstacles.placeNewObstacle(this.skier.direction);
         }
-    };
+    }
 
-    const intersectRect = function(r1, r2) {
-        return !(r2.left > r1.right ||
-            r2.right < r1.left ||
-            r2.top > r1.bottom ||
-            r2.bottom < r1.top);
-    };
 
-    const gameLoop = function() {
+    gameLoop() {
 
-        ctx.save();
+        this.ctx.save();
 
         // Retina support
-        ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+        this.ctx.scale(this.window.devicePixelRatio, this.window.devicePixelRatio);
 
-        clearCanvas();
+        this.clearCanvas();
 
-        moveSkier();
+        this.moveSkier();
 
-        checkIfSkierHitObstacle();
+        this.obstacles.checkIfSkierHitObstacle();
 
-        skier.drawSkier(gameWidth, gameHeight);
+        this.skier.drawSkier();
 
-        drawObstacles();
+        this.obstacles.drawObstacles();
 
-        ctx.restore();
+        this.ctx.restore();
 
-        requestAnimationFrame(gameLoop);
-    };
-
-    const setupKeyhandler = function() {
-        $(window).keydown(function(event) {
-            switch (event.which) {
-                case 37: // left
-                    if (skier.direction === 1) {
-                        skier.location.x -= skier.speed;
-                        placeNewObstacle(skier.direction);
-                    }
-                    else {
-                        skier.direction--;
-                    }
-                    event.preventDefault();
-                    break;
-                case 39: // right
-                    if (skier.direction === 5) {
-                        skier.location.x += skier.speed;
-                        placeNewObstacle(skier.direction);
-                    }
-                    else {
-                        skier.direction++;
-                    }
-                    event.preventDefault();
-                    break;
-                case 38: // up
-                    if (skier.direction === 1 || skier.direction === 5) {
-                        skier.location.y -= skier.speed;
-                        placeNewObstacle(6);
-                    }
-                    event.preventDefault();
-                    break;
-                case 40: // down
-                    skier.direction = 3;
-                    event.preventDefault();
-                    break;
-            }
+        requestAnimationFrame(() => {
+            this.gameLoop();
         });
-    };
+    }
 
-    setupKeyhandler();
-    await Assets.loadAssets();
-    placeInitialObstacles();
-    requestAnimationFrame(gameLoop);
+    handleKeyDown(event: KeyboardEvent) {
+        switch (event.key) {
+            case "ArrowLeft": // left
+                if (this.skier.direction === 1) {
+                    this.skier.location.x -= this.skier.speed;
+                    this.obstacles.placeNewObstacle(this.skier.direction);
+                }
+                else {
+                    this.skier.direction--;
+                }
+                event.preventDefault();
+                break;
+            case "ArrowRight": // right
+                if (this.skier.direction === 5) {
+                    this.skier.location.x += this.skier.speed;
+                    this.obstacles.placeNewObstacle(this.skier.direction);
+                }
+                else {
+                    this.skier.direction++;
+                }
+                event.preventDefault();
+                break;
 
+            case "ArrowUp": // up
+                if (this.skier.direction === 1 || this.skier.direction === 5) {
+                    this.skier.location.y -= this.skier.speed;
+                    this.obstacles.placeNewObstacle(6);
+                }
+                event.preventDefault();
+                break;
+
+            case "ArrowDown": // down
+                this.skier.direction = 3;
+                event.preventDefault();
+                break;
+        }
+    }
+
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    // noinspection JSIgnoredPromiseFromCall
+    (new Game()).initGame();
 });

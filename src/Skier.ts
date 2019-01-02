@@ -1,4 +1,5 @@
 import { Assets } from "./Assets";
+import { Dimensions } from "./Game";
 
 interface Location {
     x: number;
@@ -9,12 +10,14 @@ export class Skier {
 
     private _ctx: CanvasRenderingContext2D;
     private _direction: number = 5;
+    gameDimensions: Dimensions;
 
     location: Location = {x: 0, y: 0};
     speed: number = 8;
 
-    constructor(ctx: CanvasRenderingContext2D) {
+    constructor(ctx: CanvasRenderingContext2D, gameDimensions: Dimensions) {
         this._ctx = ctx;
+        this.gameDimensions = gameDimensions;
     }
 
     get direction() {
@@ -25,10 +28,10 @@ export class Skier {
         this._direction = direction;
     }
 
-    drawSkier(gameWidth: number, gameHeight: number) {
+    drawSkier() {
         const skierImage = Assets.getSkierImage(this._direction);
-        const x = (gameWidth - skierImage.width) * 0.5;
-        const y = (gameHeight - skierImage.height) * 0.5;
+        const x = (this.gameDimensions.width - skierImage.width) * 0.5;
+        const y = (this.gameDimensions.height - skierImage.height) * 0.5;
 
         this._ctx.drawImage(skierImage, x, y, skierImage.width, skierImage.height);
     }
