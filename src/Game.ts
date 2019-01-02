@@ -18,6 +18,10 @@ class Game {
     skier: Skier;
     obstacles: Obstacles;
 
+    conditions = {
+        paused: false
+    };
+
     dimensions: Dimensions = {
         width: this.window.innerWidth,
         height: this.window.innerHeight
@@ -67,22 +71,24 @@ class Game {
 
     gameLoop() {
 
-        this.ctx.save();
+        if (!this.conditions.paused) {
+            this.ctx.save();
 
-        // Retina support
-        this.ctx.scale(this.window.devicePixelRatio, this.window.devicePixelRatio);
+            // Retina support
+            this.ctx.scale(this.window.devicePixelRatio, this.window.devicePixelRatio);
 
-        this.clearCanvas();
+            this.clearCanvas();
 
-        this.moveSkier();
+            this.moveSkier();
 
-        this.obstacles.checkIfSkierHitObstacle();
+            this.obstacles.checkIfSkierHitObstacle();
 
-        this.skier.drawSkier();
+            this.skier.drawSkier();
 
-        this.obstacles.drawObstacles();
+            this.obstacles.drawObstacles();
 
-        this.ctx.restore();
+            this.ctx.restore();
+        }
 
         requestAnimationFrame(() => {
             this.gameLoop();
@@ -90,41 +96,49 @@ class Game {
     }
 
     handleKeyDown(event: KeyboardEvent) {
-        switch (event.key) {
-            case "ArrowLeft": // left
-                if (this.skier.direction === 1) {
-                    this.skier.location.x -= this.skier.speed;
-                    this.obstacles.placeNewObstacle(this.skier.direction);
-                }
-                else if (this.skier.direction !== 0) {
-                    this.skier.direction--;
-                }
-                event.preventDefault();
-                break;
 
-            case "ArrowRight": // right
-                if (this.skier.direction === 5) {
-                    this.skier.location.x += this.skier.speed;
-                    this.obstacles.placeNewObstacle(this.skier.direction);
-                }
-                else if (this.skier.direction !== 0) {
-                    this.skier.direction++;
-                }
-                event.preventDefault();
-                break;
+        if (event.key == "`") {
+            this.conditions.paused = !this.conditions.paused;
+            event.preventDefault();
+            return;
+        } else if (!this.conditions.paused) {
 
-            case "ArrowUp": // up
-                if (this.skier.direction === 1 || this.skier.direction === 5) {
-                    this.skier.location.y -= this.skier.speed;
-                    this.obstacles.placeNewObstacle(6);
-                }
-                event.preventDefault();
-                break;
 
-            case "ArrowDown": // down
-                this.skier.direction = 3;
-                event.preventDefault();
-                break;
+            switch (event.key) {
+
+                case "ArrowLeft": // left
+                    if (this.skier.direction === 1) {
+                        this.skier.location.x -= this.skier.speed;
+                        this.obstacles.placeNewObstacle(this.skier.direction);
+                    } else if (this.skier.direction !== 0) {
+                        this.skier.direction--;
+                    }
+                    event.preventDefault();
+                    break;
+
+                case "ArrowRight": // right
+                    if (this.skier.direction === 5) {
+                        this.skier.location.x += this.skier.speed;
+                        this.obstacles.placeNewObstacle(this.skier.direction);
+                    } else if (this.skier.direction !== 0) {
+                        this.skier.direction++;
+                    }
+                    event.preventDefault();
+                    break;
+
+                case "ArrowUp": // up
+                    if (this.skier.direction === 1 || this.skier.direction === 5) {
+                        this.skier.location.y -= this.skier.speed;
+                        this.obstacles.placeNewObstacle(6);
+                    }
+                    event.preventDefault();
+                    break;
+
+                case "ArrowDown": // down
+                    this.skier.direction = 3;
+                    event.preventDefault();
+                    break;
+            }
         }
     }
 
