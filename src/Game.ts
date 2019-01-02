@@ -110,8 +110,8 @@ class Game {
                     if (this.skier.direction === 1) {
                         this.skier.location.x -= this.skier.speed;
                         this.obstacles.placeNewObstacle(this.skier.direction);
-                    } else if (this.skier.direction !== 0) {
-                        this.skier.direction--;
+                    } else if (this.skier.direction == 0) {
+                        this.skier.direction = 1;
                     }
                     event.preventDefault();
                     break;
@@ -120,8 +120,8 @@ class Game {
                     if (this.skier.direction === 5) {
                         this.skier.location.x += this.skier.speed;
                         this.obstacles.placeNewObstacle(this.skier.direction);
-                    } else if (this.skier.direction !== 0) {
-                        this.skier.direction++;
+                    } else if (this.skier.direction == 0) {
+                        this.skier.direction = 5;
                     }
                     event.preventDefault();
                     break;
