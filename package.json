@@ -2,16 +2,38 @@
     "name": "ceros-ski",
     "version": "0.0.1",
     "description": "",
-    "main": "web.js",
     "scripts": {
-        "start": "node web.js"
+        "start": "npm run build && npm run serve",
+        "start-dev": "npm run build && npm run watch",
+        "build": "npm run build-ts && npm run tslint && npm run copy-static-assets",
+        "serve": "ts-node server.ts",
+        "watch-node": "tsnodemon -x server.ts",
+        "watch": "concurrently -k -p \"[{name}]\" -n \"TypeScript,Node\" -c \"cyan.bold,green.bold\" \"npm run watch-ts\" \"npm run serve\"",
+        "build-ts": "tsc",
+        "watch-ts": "tsc -w",
+        "tslint": "tslint -c tslint.json -p tsconfig.json",
+        "copy-static-assets": "ts-node copyStaticAssets.ts"
     },
     "author": "dan.wash@ceros.com",
     "license": "",
     "engines": {
         "node": "8.4.0"
     },
-    "dependencies": {
-        "http-server": "^0.10.0"
+    "devDependencies": {
+        "@types/jquery": "^3.3.29",
+        "@types/lodash": "^4.14.119",
+        "@types/node": "^10.12.18",
+        "@types/shelljs": "^0.8.1",
+        "concurrently": "^4.1.0",
+        "finalhandler": "^1.1.1",
+        "http-server": "^0.10.0",
+        "lodash": "^4.17.11",
+        "nodemon": "^1.18.9",
+        "serve-static": "^1.13.2",
+        "shelljs": "^0.8.3",
+        "ts-node": "^7.0.1",
+        "tslint": "^5.12.0",
+        "tsnodemon": "^1.1.2",
+        "typescript": "^3.2.2"
     }
 }
