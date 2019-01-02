@@ -5,7 +5,7 @@ const UglifyJsWebpackPlugin = require('uglifyjs-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
-    entry: './src/game.ts',
+    entry: './src/Game.ts',
     plugins: [
         new CleanWebpackPlugin(['dist']),
         new HtmlWebpackPlugin({
@@ -49,7 +49,7 @@ module.exports = {
         splitChunks: {
             chunks: 'all'
         },
-        minimizer: [new UglifyJsWebpackPlugin()],
+        // minimizer: [new UglifyJsWebpackPlugin()],
     },
     devServer: {
         contentBase: path.join(__dirname, 'dist'),

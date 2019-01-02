@@ -1,30 +1,18 @@
 import $ from "jquery";
 import _ from "lodash";
+import { AssetLoader } from "./AssetLoader";
 
-$(document).ready(function() {
-
-    const assets = {
-        "skierCrash" : "/public/images/skier_crash.png",
-        "skierLeft" : "/public/images/skier_left.png",
-        "skierLeftDown" : "/public/images/skier_left_down.png",
-        "skierDown" : "/public/images/skier_down.png",
-        "skierRightDown" : "/public/images/skier_right_down.png",
-        "skierRight" : "/public/images/skier_right.png",
-        "tree" : "/public/images/tree_1.png",
-        "treeCluster" : "/public/images/tree_cluster.png",
-        "rock1" : "/public/images/rock_1.png",
-        "rock2" : "/public/images/rock_2.png"
-    };
-    const loadedAssets = {};
+$(document).ready(async function() {
 
     const obstacleTypes = [
-        "tree",
+        "tree_1",
         "treeCluster",
-        "rock1",
-        "rock2"
+        "rock_1",
+        "rock_2"
     ];
 
     let obstacles = [];
+    const loadedAssets = {};
 
     const gameWidth = window.innerWidth;
     const gameHeight = window.innerHeight;
@@ -264,28 +252,6 @@ $(document).ready(function() {
         requestAnimationFrame(gameLoop);
     };
 
-    const loadAssets = function() {
-        const assetPromises = [];
-
-        _.each(assets, function(asset, assetName) {
-            const assetImage = new Image();
-            const assetDeferred = $.Deferred();
-
-            assetImage.onload = function() {
-                assetImage.width /= 2;
-                assetImage.height /= 2;
-
-                loadedAssets[assetName] = assetImage;
-                assetDeferred.resolve();
-            };
-            assetImage.src = asset;
-
-            assetPromises.push(assetDeferred.promise());
-        });
-
-        return $.when.apply($, assetPromises);
-    };
-
     const setupKeyhandler = function() {
         $(window).keydown(function(event) {
             switch (event.which) {
@@ -324,14 +290,16 @@ $(document).ready(function() {
         });
     };
 
-    const initGame = (gameLoop: any) => {
+    const initGame = async () => {
         setupKeyhandler();
-        loadAssets().then(function() {
-            placeInitialObstacles();
-
-            requestAnimationFrame(gameLoop);
+        const assets = await AssetLoader.loadAssets();
+        assets.forEach((asset: HTMLImageElement) => {
+            loadedAssets[asset["key"]] = asset;
         });
     };
 
-    initGame(gameLoop);
+    await initGame();
+    placeInitialObstacles();
+    requestAnimationFrame(gameLoop);
+
 });

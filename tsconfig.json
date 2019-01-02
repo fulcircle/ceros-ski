@@ -17,7 +17,12 @@
         "node_modules/*",
         "src/types/*"
       ]
-    }
+    },
+    "lib": [
+      "dom",
+      "es2015.promise",
+      "es5"
+    ]
   },
   "include": [
     "src/**/*"
