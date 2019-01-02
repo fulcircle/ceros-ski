@@ -31,18 +31,20 @@ class Game {
                 width: this.dimensions.width + "px",
                 height: this.dimensions.height + "px"
             });
+
         this.body.append(this.canvas);
         this.ctx = (<HTMLCanvasElement>this.canvas[0]).getContext("2d");
 
+        await Assets.loadAssets();
+
         this.skier = new Skier(this.ctx, this.dimensions);
+
+        this.obstacles = new Obstacles(this.ctx, this.skier, this.dimensions);
+        this.obstacles.placeInitialObstacles();
 
         this.window.onkeydown = (event: KeyboardEvent) => {
             this.handleKeyDown(event);
         };
-        await Assets.loadAssets();
-
-        this.obstacles = new Obstacles(this.ctx, this.skier, this.dimensions);
-        this.obstacles.placeInitialObstacles();
 
         requestAnimationFrame(() => {
             this.gameLoop();
