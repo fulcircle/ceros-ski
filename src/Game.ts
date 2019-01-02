@@ -96,17 +96,18 @@ class Game {
                     this.skier.location.x -= this.skier.speed;
                     this.obstacles.placeNewObstacle(this.skier.direction);
                 }
-                else {
+                else if (this.skier.direction !== 0) {
                     this.skier.direction--;
                 }
                 event.preventDefault();
                 break;
+
             case "ArrowRight": // right
                 if (this.skier.direction === 5) {
                     this.skier.location.x += this.skier.speed;
                     this.obstacles.placeNewObstacle(this.skier.direction);
                 }
-                else {
+                else if (this.skier.direction !== 0) {
                     this.skier.direction++;
                 }
                 event.preventDefault();
