@@ -15,7 +15,18 @@ const ASSETS = [
     "rock_2"
 ];
 
-export class AssetLoader {
+const SKIER_DIRECTIONS = {
+    0: "skierCrash",
+    1: "skierLeft",
+    2: "skierLeftDown",
+    3: "skierDown",
+    4: "skierRightDown",
+    5: "skierRight"
+};
+
+const LOADED_ASSETS = {};
+
+export class Assets {
 
     private static _loadAsset(asset: string): Promise<HTMLImageElement> {
         const file_name = Util.camelToSnake(asset) + ".png";
@@ -32,12 +43,24 @@ export class AssetLoader {
         });
     }
 
+    static getSkierImage(direction: number) {
+        const skierAsset = SKIER_DIRECTIONS[direction];
+        return Assets.getImage(skierAsset);
+    }
+
+    static getImage(type: string): HTMLImageElement {
+        return LOADED_ASSETS[type];
+    }
+
     static async loadAssets() {
 
         const promises = ASSETS.map((asset: string): Promise<HTMLImageElement> => {
-            return AssetLoader._loadAsset(asset);
+            return Assets._loadAsset(asset);
         });
 
-        return Promise.all(promises);
+        const assets = await Promise.all(promises);
+        assets.forEach((asset: HTMLImageElement) => {
+            LOADED_ASSETS[asset["key"]] = asset;
+        });
     }
 }

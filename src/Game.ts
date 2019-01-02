@@ -1,6 +1,7 @@
 import $ from "jquery";
 import _ from "lodash";
-import { AssetLoader } from "./AssetLoader";
+import { Assets } from "./Assets";
+import { Skier } from "./Skier";
 
 $(document).ready(async function() {
 
@@ -12,7 +13,6 @@ $(document).ready(async function() {
     ];
 
     let obstacles = [];
-    const loadedAssets = {};
 
     const gameWidth = window.innerWidth;
     const gameHeight = window.innerHeight;
@@ -26,79 +26,26 @@ $(document).ready(async function() {
     $("body").append(canvas);
     const ctx = canvas[0].getContext("2d");
 
-    let skierDirection = 5;
-    let skierMapX = 0;
-    let skierMapY = 0;
-    const skierSpeed = 8;
+    const skier = new Skier(ctx);
 
     const clearCanvas = function() {
         ctx.clearRect(0, 0, gameWidth, gameHeight);
     };
 
     const moveSkier = function() {
-        switch (skierDirection) {
-            case 2:
-                skierMapX -= Math.round(skierSpeed / 1.4142);
-                skierMapY += Math.round(skierSpeed / 1.4142);
-
-                placeNewObstacle(skierDirection);
-                break;
-            case 3:
-                skierMapY += skierSpeed;
-
-                placeNewObstacle(skierDirection);
-                break;
-            case 4:
-                skierMapX += skierSpeed / 1.4142;
-                skierMapY += skierSpeed / 1.4142;
-
-                placeNewObstacle(skierDirection);
-                break;
+        skier.move();
+        if (skier.direction === 2 || skier.direction === 3 || skier.direction === 4) {
+            placeNewObstacle(skier.direction);
         }
-    };
-
-    const getSkierAsset = function() {
-        let skierAssetName;
-        switch (skierDirection) {
-            case 0:
-                skierAssetName = "skierCrash";
-                break;
-            case 1:
-                skierAssetName = "skierLeft";
-                break;
-            case 2:
-                skierAssetName = "skierLeftDown";
-                break;
-            case 3:
-                skierAssetName = "skierDown";
-                break;
-            case 4:
-                skierAssetName = "skierRightDown";
-                break;
-            case 5:
-                skierAssetName = "skierRight";
-                break;
-        }
-
-        return skierAssetName;
-    };
-
-    const drawSkier = function() {
-        const skierAssetName = getSkierAsset();
-        const skierImage = loadedAssets[skierAssetName];
-        const x = (gameWidth - skierImage.width) / 2;
-        const y = (gameHeight - skierImage.height) / 2;
-
-        ctx.drawImage(skierImage, x, y, skierImage.width, skierImage.height);
     };
 
     const drawObstacles = function() {
         const newObstacles = [];
 
         _.each(obstacles, function(obstacle) {
-            const obstacleImage = loadedAssets[obstacle.type];
-            const x = obstacle.x - skierMapX - obstacleImage.width / 2;
-            const y = obstacle.y - skierMapY - obstacleImage.height / 2;
+            const obstacleImage = Assets.getImage(obstacle.type);
+            const x = obstacle.x - skier.location.x - obstacleImage.width / 2;
+            const y = obstacle.y - skier.location.y - obstacleImage.height / 2;
 
             if (x < -100 || x > gameWidth + 50 || y < -100 || y > gameHeight + 50) {
                 return;
@@ -125,7 +72,7 @@ $(document).ready(async function() {
         }
 
         obstacles = _.sortBy(obstacles, function(obstacle) {
-            const obstacleImage = loadedAssets[obstacle.type];
+            const obstacleImage = Assets.getImage(obstacle.type);
             return obstacle.y + obstacleImage.height;
         });
     };
@@ -136,10 +83,10 @@ $(document).ready(async function() {
             return;
         }
 
-        const leftEdge = skierMapX;
-        const rightEdge = skierMapX + gameWidth;
-        const topEdge = skierMapY;
-        const bottomEdge = skierMapY + gameHeight;
+        const leftEdge = skier.location.x;
+        const rightEdge = skier.location.x + gameWidth;
+        const topEdge = skier.location.y;
+        const bottomEdge = skier.location.y + gameHeight;
 
         switch (direction) {
             case 1: // left
@@ -197,17 +144,16 @@ $(document).ready(async function() {
     };
 
     const checkIfSkierHitObstacle = function() {
-        const skierAssetName = getSkierAsset();
-        const skierImage = loadedAssets[skierAssetName];
+        const skierImage = Assets.getSkierImage(skier.direction);
         const skierRect = {
-            left: skierMapX + gameWidth / 2,
-            right: skierMapX + skierImage.width + gameWidth / 2,
-            top: skierMapY + skierImage.height - 5 + gameHeight / 2,
-            bottom: skierMapY + skierImage.height + gameHeight / 2
+            left: skier.location.x + gameWidth / 2,
+            right: skier.location.x + skierImage.width + gameWidth / 2,
+            top: skier.location.y + skierImage.height - 5 + gameHeight / 2,
+            bottom: skier.location.y + skierImage.height + gameHeight / 2
         };
 
         const collision = _.find(obstacles, function(obstacle) {
-            const obstacleImage = loadedAssets[obstacle.type];
+            const obstacleImage = Assets.getImage(obstacle.type);
             const obstacleRect = {
                 left: obstacle.x,
                 right: obstacle.x + obstacleImage.width,
@@ -219,7 +165,7 @@ $(document).ready(async function() {
         });
 
         if (collision) {
-            skierDirection = 0;
+            skier.direction = 0;
         }
     };
 
@@ -243,7 +189,7 @@ $(document).ready(async function() {
 
         checkIfSkierHitObstacle();
 
-        drawSkier();
+        skier.drawSkier(gameWidth, gameHeight);
 
         drawObstacles();
 
@@ -256,49 +202,42 @@ $(document).ready(async function() {
         $(window).keydown(function(event) {
             switch (event.which) {
                 case 37: // left
-                    if (skierDirection === 1) {
-                        skierMapX -= skierSpeed;
-                        placeNewObstacle(skierDirection);
+                    if (skier.direction === 1) {
+                        skier.location.x -= skier.speed;
+                        placeNewObstacle(skier.direction);
                     }
                     else {
-                        skierDirection--;
+                        skier.direction--;
                     }
                     event.preventDefault();
                     break;
                 case 39: // right
-                    if (skierDirection === 5) {
-                        skierMapX += skierSpeed;
-                        placeNewObstacle(skierDirection);
+                    if (skier.direction === 5) {
+                        skier.location.x += skier.speed;
+                        placeNewObstacle(skier.direction);
                     }
                     else {
-                        skierDirection++;
+                        skier.direction++;
                     }
                     event.preventDefault();
                     break;
                 case 38: // up
-                    if (skierDirection === 1 || skierDirection === 5) {
-                        skierMapY -= skierSpeed;
+                    if (skier.direction === 1 || skier.direction === 5) {
+                        skier.location.y -= skier.speed;
                         placeNewObstacle(6);
                     }
                     event.preventDefault();
                     break;
                 case 40: // down
-                    skierDirection = 3;
+                    skier.direction = 3;
                     event.preventDefault();
                     break;
             }
         });
     };
 
-    const initGame = async () => {
-        setupKeyhandler();
-        const assets = await AssetLoader.loadAssets();
-        assets.forEach((asset: HTMLImageElement) => {
-            loadedAssets[asset["key"]] = asset;
-        });
-    };
-
-    await initGame();
+    setupKeyhandler();
+    await Assets.loadAssets();
     placeInitialObstacles();
     requestAnimationFrame(gameLoop);
 
