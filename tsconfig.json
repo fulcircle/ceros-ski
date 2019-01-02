@@ -1,8 +1,12 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
+    "allowSyntheticDefaultImports": true,
+    "allowJs": true,
+    "module": "es6",
+    "target": "es5",
+    "resolveJsonModule": true,
+    "experimentalDecorators": true,
     "esModuleInterop": true,
-    "target": "es6",
     "noImplicitAny": false,
     "moduleResolution": "node",
     "sourceMap": true,
