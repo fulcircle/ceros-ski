@@ -101,10 +101,15 @@ class Game {
             this.conditions.paused = !this.conditions.paused;
             event.preventDefault();
             return;
-        } else if (!this.conditions.paused) {
 
+        } else if (!this.conditions.paused && !this.skier.jumping) {
 
             switch (event.key) {
+
+                case " ":
+                    this.skier.jump();
+                    event.preventDefault();
+                    break;
 
                 case "ArrowLeft": // left
                     if (this.skier.direction === 1) {
@@ -112,6 +117,8 @@ class Game {
                         this.obstacles.placeNewObstacle(this.skier.direction);
                     } else if (this.skier.direction == 0) {
                         this.skier.direction = 1;
+                    } else {
+                        this.skier.direction--;
                     }
                     event.preventDefault();
                     break;
@@ -122,6 +129,8 @@ class Game {
                         this.obstacles.placeNewObstacle(this.skier.direction);
                     } else if (this.skier.direction == 0) {
                         this.skier.direction = 5;
+                    } else {
+                        this.skier.direction++;
                     }
                     event.preventDefault();
                     break;

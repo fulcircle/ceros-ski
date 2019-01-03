@@ -132,6 +132,10 @@ export class Obstacles {
     }
 
     checkIfSkierHitObstacle() {
+        if (this._skier.jumping) {
+            return false;
+        }
+
         const skierImage = Assets.getSkierImage(this._skier.direction);
         const skierRect = {
             left: this._skier.location.x + this.gameDimensions.width / 2,

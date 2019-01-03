@@ -12,7 +12,12 @@ const ASSETS = [
     "tree_1",
     "treeCluster",
     "rock_1",
-    "rock_2"
+    "rock_2",
+    "skier_jump_1",
+    "skier_jump_2",
+    "skier_jump_3",
+    "skier_jump_4",
+    "skier_jump_5",
 ];
 
 const SKIER_DIRECTIONS = {
@@ -46,6 +51,10 @@ export class Assets {
     static getSkierImage(direction: number) {
         const skierAsset = SKIER_DIRECTIONS[direction];
         return Assets.getImage(skierAsset);
+    }
+
+    static getSkierJumpingImage(frame: number) {
+        return Assets.getImage("skier_jump_" + frame);
     }
 
     static getImage(type: string): HTMLImageElement {
