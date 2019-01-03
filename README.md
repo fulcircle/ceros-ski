@@ -1,3 +1,30 @@
+# Ceros Ski (the fulcircle version)
+### Demo: https://ski.fulcircle.io
+
+## Bugfixes:
+1. Hitting `ArrowLeft` no longer causes the game to crash.
+
+## Features Improvements
+1. Player can now jump by pressing `spacebar`.  Player can only jump every 1.5s to prevent abuse.
+2. Game can now be paused by hitting the backtick/tilde (`) key.
+
+## Key Architectural Improvements
+1. Converted entire project to Typescript and OOP.
+1. Use `async/await` in place of Promise syntax for loading assets. 
+1. Converted deprecated jQuery event handling to HTML5 event handling.
+1. Use webpack for build toolchain.
+
+### Building and Running Locally
+1. `npm install`
+2. `npm run start` to start server and automatically launch browser
+
+### Building for Production
+
+1. `npm run build:prod` will build ts files and minify into `dist/` directory
+
+<br>
+
+---
 # Ceros Ski Code Challenge
 
 Welcome to the Ceros Code Challenge - Ski Edition!
